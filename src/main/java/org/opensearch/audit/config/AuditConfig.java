@@ -2,14 +2,12 @@
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.opensearch.audit.config;
 
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.opensearch.audit.event.AuditCategory;
 import org.opensearch.common.settings.Setting;
@@ -24,85 +22,55 @@ public class AuditConfig {
     public static final Setting<Boolean> ENABLED = Setting.boolSetting("plugins.audit.enabled", true, Setting.Property.NodeScope);
 
     // Layer control
-    public static final Setting<Boolean> ENABLE_REST = Setting.boolSetting(
-        "plugins.audit.enable_rest",
-        true,
-        Setting.Property.NodeScope
-    );
-    public static final Setting<Boolean> ENABLE_TRANSPORT = Setting.boolSetting(
-        "plugins.audit.enable_transport",
-        true,
-        Setting.Property.NodeScope
-    );
+    public static final Setting<Boolean> ENABLE_REST = Setting.boolSetting("plugins.audit.enable_rest", true, Setting.Property.NodeScope);
+    public static final Setting<Boolean> ENABLE_TRANSPORT = Setting
+        .boolSetting("plugins.audit.enable_transport", true, Setting.Property.NodeScope);
 
     // Category filtering
-    public static final Setting<List<String>> DISABLED_REST_CATEGORIES = Setting.listSetting(
-        "plugins.audit.disabled_rest_categories",
-        Collections.emptyList(),
-        s -> s,
-        Setting.Property.NodeScope
-    );
-    public static final Setting<List<String>> DISABLED_TRANSPORT_CATEGORIES = Setting.listSetting(
-        "plugins.audit.disabled_transport_categories",
-        Collections.emptyList(),
-        s -> s,
-        Setting.Property.NodeScope
-    );
+    public static final Setting<List<String>> DISABLED_REST_CATEGORIES = Setting
+        .listSetting("plugins.audit.disabled_rest_categories", Collections.emptyList(), s -> s, Setting.Property.NodeScope);
+    public static final Setting<List<String>> DISABLED_TRANSPORT_CATEGORIES = Setting
+        .listSetting("plugins.audit.disabled_transport_categories", Collections.emptyList(), s -> s, Setting.Property.NodeScope);
 
     // User/request filtering
-    public static final Setting<List<String>> IGNORE_USERS = Setting.listSetting(
-        "plugins.audit.ignore_users",
-        Collections.emptyList(),
-        s -> s,
-        Setting.Property.NodeScope
-    );
-    public static final Setting<List<String>> IGNORE_REQUESTS = Setting.listSetting(
-        "plugins.audit.ignore_requests",
-        Collections.emptyList(),
-        s -> s,
-        Setting.Property.NodeScope
-    );
+    public static final Setting<List<String>> IGNORE_USERS = Setting
+        .listSetting("plugins.audit.ignore_users", Collections.emptyList(), s -> s, Setting.Property.NodeScope);
+    public static final Setting<List<String>> IGNORE_REQUESTS = Setting
+        .listSetting("plugins.audit.ignore_requests", Collections.emptyList(), s -> s, Setting.Property.NodeScope);
 
     // Request body and index resolution
-    public static final Setting<Boolean> LOG_REQUEST_BODY = Setting.boolSetting(
-        "plugins.audit.log_request_body",
-        true,
-        Setting.Property.NodeScope
-    );
-    public static final Setting<Boolean> RESOLVE_INDICES = Setting.boolSetting(
-        "plugins.audit.resolve_indices",
-        true,
-        Setting.Property.NodeScope
-    );
-    public static final Setting<Boolean> EXCLUDE_SENSITIVE_HEADERS = Setting.boolSetting(
-        "plugins.audit.exclude_sensitive_headers",
-        true,
-        Setting.Property.NodeScope
-    );
+    public static final Setting<Boolean> LOG_REQUEST_BODY = Setting
+        .boolSetting("plugins.audit.log_request_body", true, Setting.Property.NodeScope);
+    public static final Setting<Boolean> RESOLVE_INDICES = Setting
+        .boolSetting("plugins.audit.resolve_indices", true, Setting.Property.NodeScope);
+    public static final Setting<Boolean> EXCLUDE_SENSITIVE_HEADERS = Setting
+        .boolSetting("plugins.audit.exclude_sensitive_headers", true, Setting.Property.NodeScope);
 
     // Log4j sink settings
-    public static final Setting<Boolean> LOG4J_SINK_ENABLED = Setting.boolSetting(
-        "plugins.audit.sink.log4j.enabled",
-        true,
-        Setting.Property.NodeScope
-    );
-    public static final Setting<String> LOG4J_LOGGER_NAME = Setting.simpleString(
-        "plugins.audit.sink.log4j.logger_name",
-        "opensearch.audit",
-        Setting.Property.NodeScope
-    );
+    public static final Setting<Boolean> LOG4J_SINK_ENABLED = Setting
+        .boolSetting("plugins.audit.sink.log4j.enabled", true, Setting.Property.NodeScope);
+    public static final Setting<String> LOG4J_LOGGER_NAME = Setting
+        .simpleString("plugins.audit.sink.log4j.logger_name", "opensearch.audit", Setting.Property.NodeScope);
 
     // Index sink settings
-    public static final Setting<Boolean> INDEX_SINK_ENABLED = Setting.boolSetting(
-        "plugins.audit.sink.index.enabled",
-        false,
-        Setting.Property.NodeScope
-    );
-    public static final Setting<String> INDEX_NAME = Setting.simpleString(
-        "plugins.audit.sink.index.name",
-        "audit-",
-        Setting.Property.NodeScope
-    );
+    public static final Setting<Boolean> INDEX_SINK_ENABLED = Setting
+        .boolSetting("plugins.audit.sink.index.enabled", false, Setting.Property.NodeScope);
+    public static final Setting<String> INDEX_NAME = Setting
+        .simpleString("plugins.audit.sink.index.name", "audit-", Setting.Property.NodeScope);
+
+    // Ring buffer settings
+    public static final Setting<Integer> RING_BUFFER_CAPACITY = Setting
+        .intSetting("plugins.audit.ring_buffer.capacity", 8192, 64, Setting.Property.NodeScope);
+    public static final Setting<Integer> RING_BUFFER_BATCH_SIZE = Setting
+        .intSetting("plugins.audit.ring_buffer.batch_size", 256, 1, Setting.Property.NodeScope);
+    public static final Setting<Long> RING_BUFFER_FLUSH_INTERVAL_MS = Setting
+        .longSetting("plugins.audit.ring_buffer.flush_interval_ms", 100L, 10L, Setting.Property.NodeScope);
+
+    // Search aggregation settings
+    public static final Setting<Boolean> SEARCH_AGGREGATION_ENABLED = Setting
+        .boolSetting("plugins.audit.search_aggregation.enabled", true, Setting.Property.NodeScope);
+    public static final Setting<Long> SEARCH_AGGREGATION_STALE_MS = Setting
+        .longSetting("plugins.audit.search_aggregation.stale_threshold_ms", 30000L, 1000L, Setting.Property.NodeScope);
 
     private final boolean enabled;
     private final boolean enableRest;
@@ -117,6 +85,11 @@ public class AuditConfig {
     private final String log4jLoggerName;
     private final boolean indexSinkEnabled;
     private final String indexName;
+    private final int ringBufferCapacity;
+    private final int ringBufferBatchSize;
+    private final long ringBufferFlushIntervalMs;
+    private final boolean searchAggregationEnabled;
+    private final long searchAggregationStaleMs;
 
     public AuditConfig(Settings settings) {
         this.enabled = ENABLED.get(settings);
@@ -131,6 +104,11 @@ public class AuditConfig {
         this.log4jLoggerName = LOG4J_LOGGER_NAME.get(settings);
         this.indexSinkEnabled = INDEX_SINK_ENABLED.get(settings);
         this.indexName = INDEX_NAME.get(settings);
+        this.ringBufferCapacity = RING_BUFFER_CAPACITY.get(settings);
+        this.ringBufferBatchSize = RING_BUFFER_BATCH_SIZE.get(settings);
+        this.ringBufferFlushIntervalMs = RING_BUFFER_FLUSH_INTERVAL_MS.get(settings);
+        this.searchAggregationEnabled = SEARCH_AGGREGATION_ENABLED.get(settings);
+        this.searchAggregationStaleMs = SEARCH_AGGREGATION_STALE_MS.get(settings);
 
         Set<AuditCategory> disabled = EnumSet.noneOf(AuditCategory.class);
         for (String cat : DISABLED_REST_CATEGORIES.get(settings)) {
@@ -202,25 +180,51 @@ public class AuditConfig {
         return indexName;
     }
 
+    public int getRingBufferCapacity() {
+        return ringBufferCapacity;
+    }
+
+    public int getRingBufferBatchSize() {
+        return ringBufferBatchSize;
+    }
+
+    public long getRingBufferFlushIntervalMs() {
+        return ringBufferFlushIntervalMs;
+    }
+
+    public boolean isSearchAggregationEnabled() {
+        return searchAggregationEnabled;
+    }
+
+    public long getSearchAggregationStaleMs() {
+        return searchAggregationStaleMs;
+    }
+
     /**
      * Returns all settings registered by this plugin.
      */
     public static List<Setting<?>> getSettings() {
-        return List.of(
-            ENABLED,
-            ENABLE_REST,
-            ENABLE_TRANSPORT,
-            DISABLED_REST_CATEGORIES,
-            DISABLED_TRANSPORT_CATEGORIES,
-            IGNORE_USERS,
-            IGNORE_REQUESTS,
-            LOG_REQUEST_BODY,
-            RESOLVE_INDICES,
-            EXCLUDE_SENSITIVE_HEADERS,
-            LOG4J_SINK_ENABLED,
-            LOG4J_LOGGER_NAME,
-            INDEX_SINK_ENABLED,
-            INDEX_NAME
-        );
+        return List
+            .of(
+                ENABLED,
+                ENABLE_REST,
+                ENABLE_TRANSPORT,
+                DISABLED_REST_CATEGORIES,
+                DISABLED_TRANSPORT_CATEGORIES,
+                IGNORE_USERS,
+                IGNORE_REQUESTS,
+                LOG_REQUEST_BODY,
+                RESOLVE_INDICES,
+                EXCLUDE_SENSITIVE_HEADERS,
+                LOG4J_SINK_ENABLED,
+                LOG4J_LOGGER_NAME,
+                INDEX_SINK_ENABLED,
+                INDEX_NAME,
+                RING_BUFFER_CAPACITY,
+                RING_BUFFER_BATCH_SIZE,
+                RING_BUFFER_FLUSH_INTERVAL_MS,
+                SEARCH_AGGREGATION_ENABLED,
+                SEARCH_AGGREGATION_STALE_MS
+            );
     }
 }

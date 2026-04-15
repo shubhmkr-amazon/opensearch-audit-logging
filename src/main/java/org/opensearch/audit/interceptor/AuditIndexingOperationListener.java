@@ -2,14 +2,12 @@
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.opensearch.audit.interceptor;
 
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.opensearch.audit.event.AuditCategory;
 import org.opensearch.audit.event.AuditEvent;
 import org.opensearch.audit.sink.SinkRouter;
@@ -27,9 +25,11 @@ public class AuditIndexingOperationListener implements IndexingOperationListener
     private static final Logger log = LogManager.getLogger(AuditIndexingOperationListener.class);
 
     private final SinkRouter sinkRouter;
+    private final String auditIndexPrefix;
 
-    public AuditIndexingOperationListener(SinkRouter sinkRouter) {
+    public AuditIndexingOperationListener(SinkRouter sinkRouter, String auditIndexPrefix) {
         this.sinkRouter = sinkRouter;
+        this.auditIndexPrefix = auditIndexPrefix;
     }
 
     @Override
@@ -37,8 +37,12 @@ public class AuditIndexingOperationListener implements IndexingOperationListener
         if (result.getFailure() != null) {
             return;
         }
+        if (shardId.getIndexName().startsWith(auditIndexPrefix)) {
+            return;
+        }
         try {
-            AuditEvent event = AuditEvent.builder(AuditCategory.DOCUMENT_WRITE)
+            AuditEvent event = AuditEvent
+                .builder(AuditCategory.DOCUMENT_WRITE)
                 .origin("INDEX")
                 .requestAction("indices:data/write/index")
                 .traceIndices(List.of(shardId.getIndexName()))
@@ -55,8 +59,12 @@ public class AuditIndexingOperationListener implements IndexingOperationListener
         if (result.getFailure() != null) {
             return;
         }
+        if (shardId.getIndexName().startsWith(auditIndexPrefix)) {
+            return;
+        }
         try {
-            AuditEvent event = AuditEvent.builder(AuditCategory.DOCUMENT_WRITE)
+            AuditEvent event = AuditEvent
+                .builder(AuditCategory.DOCUMENT_WRITE)
                 .origin("INDEX")
                 .requestAction("indices:data/write/delete")
                 .traceIndices(List.of(shardId.getIndexName()))

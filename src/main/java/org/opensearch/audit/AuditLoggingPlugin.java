@@ -2,7 +2,6 @@
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.opensearch.audit;
 
 import java.io.IOException;
@@ -17,6 +16,7 @@ import org.opensearch.audit.config.AuditConfig;
 import org.opensearch.audit.interceptor.AuditActionFilter;
 import org.opensearch.audit.interceptor.AuditIndexingOperationListener;
 import org.opensearch.audit.interceptor.AuditSearchOperationListener;
+import org.opensearch.audit.interceptor.SearchAuditAggregator;
 import org.opensearch.audit.rest.AuditConfigRestAction;
 import org.opensearch.audit.rest.AuditHealthRestAction;
 import org.opensearch.audit.rest.AuditStatsRestAction;
@@ -57,6 +57,7 @@ public class AuditLoggingPlugin extends Plugin implements ActionPlugin {
     private SinkRouter sinkRouter;
     private AuditConfig auditConfig;
     private ThreadPool threadPool;
+    private SearchAuditAggregator searchAggregator;
 
     public AuditLoggingPlugin(final Settings settings) {
         this.settings = settings;
@@ -92,12 +93,17 @@ public class AuditLoggingPlugin extends Plugin implements ActionPlugin {
 
         this.sinkRouter = new SinkRouter(sinks, threadPool, auditConfig);
 
+        if (auditConfig.isSearchAggregationEnabled()) {
+            this.searchAggregator = new SearchAuditAggregator(sinkRouter, auditConfig.getSearchAggregationStaleMs());
+            this.sinkRouter.setPeriodicTask(searchAggregator::evictStale);
+        }
+
         return List.of(sinkRouter, auditConfig);
     }
 
     @Override
     public List<ActionFilter> getActionFilters() {
-        return Collections.singletonList(new AuditActionFilter(settings, sinkRouter, threadPool));
+        return Collections.singletonList(new AuditActionFilter(settings, sinkRouter, threadPool, auditConfig.getIndexName()));
     }
 
     @Override
@@ -121,8 +127,15 @@ public class AuditLoggingPlugin extends Plugin implements ActionPlugin {
     @Override
     public void onIndexModule(IndexModule indexModule) {
         if (sinkRouter != null) {
-            indexModule.addIndexOperationListener(new AuditIndexingOperationListener(sinkRouter));
-            indexModule.addSearchOperationListener(new AuditSearchOperationListener(sinkRouter));
+            indexModule.addIndexOperationListener(new AuditIndexingOperationListener(sinkRouter, auditConfig.getIndexName()));
+            if (searchAggregator != null) {
+                indexModule.addSearchOperationListener(new AuditSearchOperationListener(searchAggregator));
+            } else {
+                indexModule
+                    .addSearchOperationListener(
+                        new AuditSearchOperationListener(new SearchAuditAggregator(sinkRouter, auditConfig.getSearchAggregationStaleMs()))
+                    );
+            }
         }
     }
 

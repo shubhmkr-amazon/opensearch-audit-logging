@@ -2,7 +2,6 @@
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.opensearch.audit.event;
 
 import java.time.Instant;
@@ -116,18 +115,30 @@ public class AuditEvent implements ToXContentObject {
         builder.field("audit_format_version", FORMAT_VERSION);
         builder.field("audit_timestamp", timestamp.toString());
         builder.field("audit_category", category.name());
-        if (origin != null) builder.field("audit_origin", origin);
-        if (nodeId != null) builder.field("audit_node_id", nodeId);
-        if (nodeName != null) builder.field("audit_node_name", nodeName);
-        if (clusterName != null) builder.field("audit_cluster_name", clusterName);
-        if (effectiveUser != null) builder.field("audit_request_effective_user", effectiveUser);
-        if (!effectiveUserRoles.isEmpty()) builder.field("audit_request_effective_user_roles", effectiveUserRoles);
-        if (remoteAddress != null) builder.field("audit_request_remote_address", remoteAddress);
-        if (requestAction != null) builder.field("audit_request_action", requestAction);
-        if (!traceIndices.isEmpty()) builder.field("audit_trace_indices", traceIndices);
-        if (!resolvedIndices.isEmpty()) builder.field("audit_trace_resolved_indices", resolvedIndices);
-        if (requestBody != null) builder.field("audit_request_body", requestBody);
-        if (!requestHeaders.isEmpty()) builder.field("audit_request_headers", requestHeaders);
+        if (origin != null)
+            builder.field("audit_origin", origin);
+        if (nodeId != null)
+            builder.field("audit_node_id", nodeId);
+        if (nodeName != null)
+            builder.field("audit_node_name", nodeName);
+        if (clusterName != null)
+            builder.field("audit_cluster_name", clusterName);
+        if (effectiveUser != null)
+            builder.field("audit_request_effective_user", effectiveUser);
+        if (!effectiveUserRoles.isEmpty())
+            builder.field("audit_request_effective_user_roles", effectiveUserRoles);
+        if (remoteAddress != null)
+            builder.field("audit_request_remote_address", remoteAddress);
+        if (requestAction != null)
+            builder.field("audit_request_action", requestAction);
+        if (!traceIndices.isEmpty())
+            builder.field("audit_trace_indices", traceIndices);
+        if (!resolvedIndices.isEmpty())
+            builder.field("audit_trace_resolved_indices", resolvedIndices);
+        if (requestBody != null)
+            builder.field("audit_request_body", requestBody);
+        if (!requestHeaders.isEmpty())
+            builder.field("audit_request_headers", requestHeaders);
         builder.endObject();
         return builder;
     }
@@ -153,18 +164,30 @@ public class AuditEvent implements ToXContentObject {
         map.put("audit_format_version", FORMAT_VERSION);
         map.put("audit_timestamp", timestamp.toString());
         map.put("audit_category", category.name());
-        if (origin != null) map.put("audit_origin", origin);
-        if (nodeId != null) map.put("audit_node_id", nodeId);
-        if (nodeName != null) map.put("audit_node_name", nodeName);
-        if (clusterName != null) map.put("audit_cluster_name", clusterName);
-        if (effectiveUser != null) map.put("audit_request_effective_user", effectiveUser);
-        if (!effectiveUserRoles.isEmpty()) map.put("audit_request_effective_user_roles", effectiveUserRoles);
-        if (remoteAddress != null) map.put("audit_request_remote_address", remoteAddress);
-        if (requestAction != null) map.put("audit_request_action", requestAction);
-        if (!traceIndices.isEmpty()) map.put("audit_trace_indices", traceIndices);
-        if (!resolvedIndices.isEmpty()) map.put("audit_trace_resolved_indices", resolvedIndices);
-        if (requestBody != null) map.put("audit_request_body", requestBody);
-        if (!requestHeaders.isEmpty()) map.put("audit_request_headers", requestHeaders);
+        if (origin != null)
+            map.put("audit_origin", origin);
+        if (nodeId != null)
+            map.put("audit_node_id", nodeId);
+        if (nodeName != null)
+            map.put("audit_node_name", nodeName);
+        if (clusterName != null)
+            map.put("audit_cluster_name", clusterName);
+        if (effectiveUser != null)
+            map.put("audit_request_effective_user", effectiveUser);
+        if (!effectiveUserRoles.isEmpty())
+            map.put("audit_request_effective_user_roles", effectiveUserRoles);
+        if (remoteAddress != null)
+            map.put("audit_request_remote_address", remoteAddress);
+        if (requestAction != null)
+            map.put("audit_request_action", requestAction);
+        if (!traceIndices.isEmpty())
+            map.put("audit_trace_indices", traceIndices);
+        if (!resolvedIndices.isEmpty())
+            map.put("audit_trace_resolved_indices", resolvedIndices);
+        if (requestBody != null)
+            map.put("audit_request_body", requestBody);
+        if (!requestHeaders.isEmpty())
+            map.put("audit_request_headers", requestHeaders);
         return map;
     }
 

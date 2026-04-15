@@ -23,7 +23,7 @@ Today, audit logging is tightly embedded inside the [security plugin](https://gi
 ## Installation
 
 ```bash
-bin/opensearch-plugin install file:///path/to/opensearch-audit-logging-3.5.0-SNAPSHOT.zip
+bin/opensearch-plugin install file:///path/to/opensearch-audit-logging/build/distributions/opensearch-audit-logging.zip
 ```
 
 ## Configuration

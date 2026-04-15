@@ -2,7 +2,6 @@
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.opensearch.audit.config;
 
 import org.opensearch.audit.event.AuditCategory;
@@ -28,7 +27,8 @@ public class AuditConfigTests extends OpenSearchTestCase {
     }
 
     public void testDisabledCategories() {
-        Settings settings = Settings.builder()
+        Settings settings = Settings
+            .builder()
             .putList("plugins.audit.disabled_rest_categories", "AUTHENTICATED", "GRANTED_PRIVILEGES")
             .build();
         AuditConfig config = new AuditConfig(settings);
@@ -39,7 +39,8 @@ public class AuditConfigTests extends OpenSearchTestCase {
     }
 
     public void testCustomSinkSettings() {
-        Settings settings = Settings.builder()
+        Settings settings = Settings
+            .builder()
             .put("plugins.audit.sink.log4j.enabled", false)
             .put("plugins.audit.sink.index.enabled", true)
             .put("plugins.audit.sink.index.name", "custom-audit-")

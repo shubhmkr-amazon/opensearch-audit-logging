@@ -2,14 +2,11 @@
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.opensearch.audit.sink;
 
-import java.util.EnumSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.opensearch.audit.config.AuditConfig;
 import org.opensearch.audit.event.AuditCategory;
@@ -36,14 +33,12 @@ public class SinkRouterTests extends OpenSearchTestCase {
     }
 
     public void testRouteToSink() throws Exception {
-        AtomicInteger storeCount = new AtomicInteger(0);
-        CountDownLatch latch = new CountDownLatch(1);
+        List<AuditEvent> stored = new ArrayList<>();
 
         AuditSink mockSink = new AuditSink() {
             @Override
             public boolean store(AuditEvent event) {
-                storeCount.incrementAndGet();
-                latch.countDown();
+                stored.add(event);
                 return true;
             }
 
@@ -67,12 +62,15 @@ public class SinkRouterTests extends OpenSearchTestCase {
         AuditEvent event = AuditEvent.builder(AuditCategory.REST_REQUEST).requestAction("test").build();
         router.route(event);
 
-        assertTrue(latch.await(5, TimeUnit.SECONDS));
-        assertEquals(1, storeCount.get());
+        // Wait for drain thread to flush
+        assertBusy(() -> assertFalse(stored.isEmpty()), 5, TimeUnit.SECONDS);
+        assertEquals(1, stored.size());
         assertEquals(1, router.getTotalEvents());
+
+        router.close();
     }
 
-    public void testDisabledAuditSkipsRouting() {
+    public void testDisabledAuditSkipsRouting() throws Exception {
         AuditConfig config = new AuditConfig(Settings.builder().put("plugins.audit.enabled", false).build());
         SinkRouter router = new SinkRouter(List.of(), threadPool, config);
 
@@ -80,17 +78,17 @@ public class SinkRouterTests extends OpenSearchTestCase {
         router.route(event);
 
         assertEquals(0, router.getTotalEvents());
+        router.close();
     }
 
-    public void testDisabledCategorySkipsRouting() {
-        AuditConfig config = new AuditConfig(
-            Settings.builder().putList("plugins.audit.disabled_rest_categories", "AUTHENTICATED").build()
-        );
+    public void testDisabledCategorySkipsRouting() throws Exception {
+        AuditConfig config = new AuditConfig(Settings.builder().putList("plugins.audit.disabled_rest_categories", "AUTHENTICATED").build());
         SinkRouter router = new SinkRouter(List.of(), threadPool, config);
 
         AuditEvent event = AuditEvent.builder(AuditCategory.AUTHENTICATED).build();
         router.route(event);
 
         assertEquals(0, router.getTotalEvents());
+        router.close();
     }
 }

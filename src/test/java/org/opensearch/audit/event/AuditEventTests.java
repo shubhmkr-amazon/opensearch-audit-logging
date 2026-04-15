@@ -2,7 +2,6 @@
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.opensearch.audit.event;
 
 import java.time.Instant;
@@ -14,7 +13,8 @@ import org.opensearch.test.OpenSearchTestCase;
 public class AuditEventTests extends OpenSearchTestCase {
 
     public void testBuilderAndToJson() {
-        AuditEvent event = AuditEvent.builder(AuditCategory.REST_REQUEST)
+        AuditEvent event = AuditEvent
+            .builder(AuditCategory.REST_REQUEST)
             .timestamp(Instant.parse("2026-04-15T00:00:00Z"))
             .origin("REST")
             .nodeId("node-1")
@@ -35,7 +35,8 @@ public class AuditEventTests extends OpenSearchTestCase {
     }
 
     public void testToMap() {
-        AuditEvent event = AuditEvent.builder(AuditCategory.DOCUMENT_WRITE)
+        AuditEvent event = AuditEvent
+            .builder(AuditCategory.DOCUMENT_WRITE)
             .requestAction("indices:data/write/index")
             .effectiveUser("writer")
             .build();

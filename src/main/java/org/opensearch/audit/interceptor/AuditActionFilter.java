@@ -2,17 +2,16 @@
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.opensearch.audit.interceptor;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.opensearch.action.ActionRequest;
+import org.opensearch.action.IndicesRequest;
+import org.opensearch.action.bulk.BulkRequest;
 import org.opensearch.action.support.ActionFilter;
 import org.opensearch.action.support.ActionFilterChain;
 import org.opensearch.audit.event.AuditCategory;
@@ -43,11 +42,13 @@ public class AuditActionFilter implements ActionFilter {
     private final Settings settings;
     private final SinkRouter sinkRouter;
     private final ThreadPool threadPool;
+    private final String auditIndexPrefix;
 
-    public AuditActionFilter(Settings settings, SinkRouter sinkRouter, ThreadPool threadPool) {
+    public AuditActionFilter(Settings settings, SinkRouter sinkRouter, ThreadPool threadPool, String auditIndexPrefix) {
         this.settings = settings;
         this.sinkRouter = sinkRouter;
         this.threadPool = threadPool;
+        this.auditIndexPrefix = auditIndexPrefix;
     }
 
     @Override
@@ -64,8 +65,15 @@ public class AuditActionFilter implements ActionFilter {
         ActionFilterChain<Request, Response> chain
     ) {
         try {
+            // Skip operations targeting audit indices to prevent recursive auditing
+            if (targetsAuditIndex(request)) {
+                chain.proceed(task, action, request, listener);
+                return;
+            }
+
             AuditCategory category = categorize(action);
-            AuditEvent.Builder builder = AuditEvent.builder(category)
+            AuditEvent.Builder builder = AuditEvent
+                .builder(category)
                 .requestAction(action)
                 .origin(isRestOrigin(action) ? "REST" : "TRANSPORT")
                 .nodeName(settings.get("node.name", "unknown"))
@@ -144,5 +152,30 @@ public class AuditActionFilter implements ActionFilter {
         } catch (Exception e) {
             log.trace("Could not extract indices from request", e);
         }
+    }
+
+    private <Request extends ActionRequest> boolean targetsAuditIndex(Request request) {
+        // Check IndicesRequest interface (covers most request types)
+        if (request instanceof IndicesRequest) {
+            String[] indices = ((IndicesRequest) request).indices();
+            if (indices != null) {
+                for (String idx : indices) {
+                    if (idx != null && idx.startsWith(auditIndexPrefix)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        // Check BulkRequest sub-requests
+        if (request instanceof BulkRequest) {
+            var subRequests = ((BulkRequest) request).requests();
+            if (!subRequests.isEmpty()) {
+                var first = subRequests.get(0);
+                if (first.index() != null && first.index().startsWith(auditIndexPrefix)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

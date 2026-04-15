@@ -2,7 +2,6 @@
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.opensearch.audit.rest;
 
 import java.util.List;
@@ -11,11 +10,11 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.opensearch.audit.event.AuditCategory;
 import org.opensearch.audit.sink.SinkRouter;
-import org.opensearch.transport.client.node.NodeClient;
 import org.opensearch.core.rest.RestStatus;
 import org.opensearch.rest.BaseRestHandler;
 import org.opensearch.rest.BytesRestResponse;
 import org.opensearch.rest.RestRequest;
+import org.opensearch.transport.client.node.NodeClient;
 
 /**
  * REST handler for GET /_plugins/_audit/stats — returns event counts per category and per sink.

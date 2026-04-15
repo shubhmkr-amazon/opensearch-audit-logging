@@ -2,18 +2,17 @@
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.opensearch.audit.rest;
 
 import java.util.List;
 
 import org.opensearch.audit.sink.AuditSink;
 import org.opensearch.audit.sink.SinkRouter;
-import org.opensearch.transport.client.node.NodeClient;
 import org.opensearch.core.rest.RestStatus;
 import org.opensearch.rest.BaseRestHandler;
 import org.opensearch.rest.BytesRestResponse;
 import org.opensearch.rest.RestRequest;
+import org.opensearch.transport.client.node.NodeClient;
 
 /**
  * REST handler for GET /_plugins/_audit/health — returns sink health status.
@@ -48,7 +47,8 @@ public class AuditHealthRestAction extends BaseRestHandler {
                 builder.startObject(sink.getName());
                 builder.field("healthy", healthy);
                 builder.endObject();
-                if (!healthy) allHealthy = false;
+                if (!healthy)
+                    allHealthy = false;
             }
             builder.endObject();
             builder.field("overall", allHealthy ? "GREEN" : "RED");
