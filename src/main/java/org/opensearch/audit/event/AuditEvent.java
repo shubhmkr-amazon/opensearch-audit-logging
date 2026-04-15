@@ -62,6 +62,54 @@ public class AuditEvent implements ToXContentObject {
         return timestamp;
     }
 
+    public String getOrigin() {
+        return origin;
+    }
+
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public String getEffectiveUser() {
+        return effectiveUser;
+    }
+
+    public List<String> getEffectiveUserRoles() {
+        return effectiveUserRoles;
+    }
+
+    public String getRemoteAddress() {
+        return remoteAddress;
+    }
+
+    public String getRequestAction() {
+        return requestAction;
+    }
+
+    public List<String> getTraceIndices() {
+        return traceIndices;
+    }
+
+    public List<String> getResolvedIndices() {
+        return resolvedIndices;
+    }
+
+    public String getRequestBody() {
+        return requestBody;
+    }
+
+    public Map<String, String> getRequestHeaders() {
+        return requestHeaders;
+    }
+
     @Override
     public XContentBuilder toXContent(XContentBuilder builder, Params params) throws java.io.IOException {
         builder.startObject();

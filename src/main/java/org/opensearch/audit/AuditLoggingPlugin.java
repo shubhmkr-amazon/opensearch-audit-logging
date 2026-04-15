@@ -15,9 +15,12 @@ import java.util.function.Supplier;
 import org.opensearch.action.support.ActionFilter;
 import org.opensearch.audit.config.AuditConfig;
 import org.opensearch.audit.interceptor.AuditActionFilter;
+import org.opensearch.audit.interceptor.AuditIndexingOperationListener;
+import org.opensearch.audit.interceptor.AuditSearchOperationListener;
 import org.opensearch.audit.rest.AuditConfigRestAction;
 import org.opensearch.audit.rest.AuditHealthRestAction;
 import org.opensearch.audit.rest.AuditStatsRestAction;
+import org.opensearch.audit.sink.CustomSinkLoader;
 import org.opensearch.audit.sink.IndexSink;
 import org.opensearch.audit.sink.Log4jSink;
 import org.opensearch.audit.sink.SinkRouter;
@@ -33,6 +36,7 @@ import org.opensearch.core.common.io.stream.NamedWriteableRegistry;
 import org.opensearch.core.xcontent.NamedXContentRegistry;
 import org.opensearch.env.Environment;
 import org.opensearch.env.NodeEnvironment;
+import org.opensearch.index.IndexModule;
 import org.opensearch.plugins.ActionPlugin;
 import org.opensearch.plugins.Plugin;
 import org.opensearch.repositories.RepositoriesService;
@@ -52,6 +56,7 @@ public class AuditLoggingPlugin extends Plugin implements ActionPlugin {
     private final Settings settings;
     private SinkRouter sinkRouter;
     private AuditConfig auditConfig;
+    private ThreadPool threadPool;
 
     public AuditLoggingPlugin(final Settings settings) {
         this.settings = settings;
@@ -72,6 +77,7 @@ public class AuditLoggingPlugin extends Plugin implements ActionPlugin {
         Supplier<RepositoriesService> repositoriesServiceSupplier
     ) {
         this.auditConfig = new AuditConfig(settings);
+        this.threadPool = threadPool;
 
         List<org.opensearch.audit.sink.AuditSink> sinks = new ArrayList<>();
         if (auditConfig.isLog4jSinkEnabled()) {
@@ -81,6 +87,9 @@ public class AuditLoggingPlugin extends Plugin implements ActionPlugin {
             sinks.add(new IndexSink(client, auditConfig));
         }
 
+        // Load custom sinks via reflection (CloudTrail, Splunk, Datadog, etc.)
+        sinks.addAll(CustomSinkLoader.loadCustomSinks(settings));
+
         this.sinkRouter = new SinkRouter(sinks, threadPool, auditConfig);
 
         return List.of(sinkRouter, auditConfig);
@@ -88,7 +97,7 @@ public class AuditLoggingPlugin extends Plugin implements ActionPlugin {
 
     @Override
     public List<ActionFilter> getActionFilters() {
-        return Collections.singletonList(new AuditActionFilter(settings, sinkRouter));
+        return Collections.singletonList(new AuditActionFilter(settings, sinkRouter, threadPool));
     }
 
     @Override
@@ -107,6 +116,14 @@ public class AuditLoggingPlugin extends Plugin implements ActionPlugin {
     @Override
     public List<Setting<?>> getSettings() {
         return AuditConfig.getSettings();
+    }
+
+    @Override
+    public void onIndexModule(IndexModule indexModule) {
+        if (sinkRouter != null) {
+            indexModule.addIndexOperationListener(new AuditIndexingOperationListener(sinkRouter));
+            indexModule.addSearchOperationListener(new AuditSearchOperationListener(sinkRouter));
+        }
     }
 
     @Override
